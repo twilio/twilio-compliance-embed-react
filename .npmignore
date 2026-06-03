@@ -1,0 +1,10 @@
+src/
+tests/
+coverage/
+.github/
+.vscode/
+.idea/
+*.config.*
+tsconfig.json
+.nvmrc
+.env*

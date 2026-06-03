@@ -1,0 +1,64 @@
+{
+  "name": "@twilio/twilio-compliance-embed-react",
+  "version": "0.0.0",
+  "description": "The official React SDK for Twilio Compliance Embed",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/twilio/twilio-compliance-embed-react.git"
+  },
+  "homepage": "https://github.com/twilio/twilio-compliance-embed-react#readme",
+  "bugs": {
+    "url": "https://github.com/twilio/twilio-compliance-embed-react/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist/index.*"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "react": "^19.0.1",
+    "persona-react": "^6.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^19.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "eslint": "^10.4.1",
+    "jsdom": "^25.0.0",
+    "persona-react": "^6.7.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.60.1",
+    "vitest": "^2.0.0"
+  }
+}
