@@ -59,6 +59,9 @@ function VerificationPage() {
 The component renders the verification UI when mounted and cleans up when unmounted. Use standard React patterns to control visibility:
 
 ```tsx
+import { useState } from 'react';
+import { TwilioComplianceEmbed } from '@twilio/twilio-compliance-embed-react';
+
 function App() {
   const [showVerification, setShowVerification] = useState(false);
 
@@ -143,4 +146,4 @@ We recommend using a minimum height of 650px and a minimum width of 400px to ens
 
 ## SSR
 
-The component is safe to import in server-side environments. When `sessionId` or `sessionToken` is missing, the component renders nothing and fires `onError` with code `21711`.
+The component is safe to import in server-side environments. When `sessionId` or `sessionToken` is missing, the component renders nothing and fires `onError` with code `21711` after mounting in the browser. Callbacks are never invoked during server-side rendering.
