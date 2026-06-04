@@ -43,7 +43,7 @@
     "coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "react": "^19.0.1",
+    "react": ">=18.0.0",
     "persona-react": "^6.7.0"
   },
   "devDependencies": {

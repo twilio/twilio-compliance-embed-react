@@ -53,7 +53,7 @@ describe('TwilioComplianceEmbed', () => {
         sessionId="inq_123"
         sessionToken="tok_abc"
         language="de"
-        frameHeight={500}
+        frameHeight="500px"
         frameWidth="100%"
         iframeTitle="Verify"
         widgetPadding={{ top: 10 }}
@@ -61,7 +61,7 @@ describe('TwilioComplianceEmbed', () => {
     );
     const props = getInquiryProps();
     expect(props.language).toBe('de');
-    expect(props.frameHeight).toBe('500');
+    expect(props.frameHeight).toBe('500px');
     expect(props.frameWidth).toBe('100%');
     expect(props.iframeTitle).toBe('Verify');
     expect(props.widgetPadding).toEqual({ top: 10 });
@@ -171,5 +171,79 @@ describe('TwilioComplianceEmbed', () => {
     );
     expect(container.innerHTML).toBe('');
     expect(getInquiryProps()).toBeUndefined();
+  });
+
+  it('uses latest callback after prop update (stale closure protection)', () => {
+    const onErrorV1 = vi.fn();
+    const onErrorV2 = vi.fn();
+    const { rerender } = render(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onError={onErrorV1} />,
+    );
+    rerender(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onError={onErrorV2} />,
+    );
+    const props = getInquiryProps();
+    (props.onError as (e: { code: string }) => void)({ code: 'unauthenticated' });
+    expect(onErrorV1).not.toHaveBeenCalled();
+    expect(onErrorV2).toHaveBeenCalledWith({
+      code: TWILIO_ERROR_CODES.UNAUTHENTICATED,
+      message: 'Session token expired',
+      sessionId: 'inq_123',
+    });
+  });
+
+  it('uses latest sessionId in onError after prop update', () => {
+    const onError = vi.fn();
+    const { rerender } = render(
+      <TwilioComplianceEmbed sessionId="inq_old" sessionToken="tok_abc" onError={onError} />,
+    );
+    rerender(
+      <TwilioComplianceEmbed sessionId="inq_new" sessionToken="tok_abc" onError={onError} />,
+    );
+    const props = getInquiryProps();
+    (props.onError as (e: { code: string }) => void)({ code: 'unauthenticated' });
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'inq_new' }),
+    );
+  });
+
+  it('uses latest onReady after prop update', () => {
+    const onReadyV1 = vi.fn();
+    const onReadyV2 = vi.fn();
+    const { rerender } = render(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onReady={onReadyV1} />,
+    );
+    rerender(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onReady={onReadyV2} />,
+    );
+    const props = getInquiryProps();
+    (props.onReady as () => void)();
+    expect(onReadyV1).not.toHaveBeenCalled();
+    expect(onReadyV2).toHaveBeenCalled();
+  });
+
+  it('handles onEvent with undefined metadata', () => {
+    const onEvent = vi.fn();
+    render(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onEvent={onEvent} />,
+    );
+    const props = getInquiryProps();
+    (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+      'start',
+      undefined,
+    );
+    expect(onEvent).toHaveBeenCalledWith({ name: 'start', data: undefined });
+  });
+
+  it('includes sessionId in Persona-originated onError', () => {
+    const onError = vi.fn();
+    render(
+      <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onError={onError} />,
+    );
+    const props = getInquiryProps();
+    (props.onError as (e: { code: string }) => void)({ code: 'some_unknown_code' });
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'inq_123' }),
+    );
   });
 });

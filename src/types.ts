@@ -28,8 +28,8 @@ export interface TwilioComplianceEmbedProps {
   sessionId: string;
   sessionToken: string;
   language?: string;
-  frameHeight?: number | string;
-  frameWidth?: number | string;
+  frameHeight?: string;
+  frameWidth?: string;
   iframeTitle?: string;
   widgetPadding?: WidgetPadding;
   onReady?: () => void;
