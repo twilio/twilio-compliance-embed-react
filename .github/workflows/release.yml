@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   test:
     name: Test
@@ -48,8 +52,8 @@ jobs:
       - name: Validate tag format and version match
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Release tag must be in the form v1.2.3 (got '$TAG')"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Release tag must be in the form v1.2.3 or v1.2.3-rc.1 (got '$TAG')"
             exit 1
           fi
           VERSION="${TAG#v}"
@@ -62,4 +66,11 @@ jobs:
       - run: npm run build
 
       - name: Publish to npm
-        run: npm publish --ignore-scripts --provenance --access public
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          if [[ "$VERSION" == *-* ]]; then
+            npm publish --ignore-scripts --provenance --access public --tag next
+          else
+            npm publish --ignore-scripts --provenance --access public
+          fi

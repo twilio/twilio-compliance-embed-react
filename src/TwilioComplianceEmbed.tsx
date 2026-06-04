@@ -3,7 +3,7 @@ import { Inquiry } from 'persona-react';
 import { EVENTS_ALLOWLIST } from './constants';
 import { mapError } from './utils/errorMapper';
 import { TWILIO_ERROR_CODES } from './types';
-import type { TwilioComplianceEmbedProps } from './types';
+import type { TwilioComplianceEmbedProps, TwilioEventName } from './types';
 
 export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
   const {
@@ -63,23 +63,19 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
       sessionToken={sessionToken}
       eventsAllowlist={EVENTS_ALLOWLIST}
       {...(language !== undefined && { language })}
-      {...(frameHeight !== undefined && { frameHeight })}
-      {...(frameWidth !== undefined && { frameWidth })}
+      {...(frameHeight !== undefined && { frameHeight: typeof frameHeight === 'number' ? `${frameHeight}px` : frameHeight })}
+      {...(frameWidth !== undefined && { frameWidth: typeof frameWidth === 'number' ? `${frameWidth}px` : frameWidth })}
       {...(iframeTitle !== undefined && { iframeTitle })}
       {...(widgetPadding !== undefined && { widgetPadding })}
       onReady={() => { onReadyRef.current?.(); }}
-      onComplete={({ inquiryId, status }: { inquiryId: string; status: string; fields: Record<string, unknown> }) => {
-        onCompleteRef.current?.({ inquiryId, status });
-      }}
-      onCancel={({ sessionToken: cancelToken }: { inquiryId?: string; sessionToken?: string }) => {
-        onCancelRef.current?.({ sessionToken: cancelToken });
-      }}
+      onComplete={() => { onCompleteRef.current?.(); }}
+      onCancel={() => { onCancelRef.current?.(); }}
       onError={({ code }: { status?: number; code: string }) => {
         const mapped = mapError(code);
         onErrorRef.current?.({ code: mapped.code, message: mapped.message, sessionId: sessionIdRef.current });
       }}
       onEvent={(name: string, metadata?: Record<string, unknown>) => {
-        onEventRef.current?.({ name, data: metadata });
+        onEventRef.current?.({ name: name as TwilioEventName, data: metadata });
       }}
     />
   );

@@ -18,6 +18,7 @@ npm install
 | Command | Description |
 |---------|-------------|
 | `npm run build` | Compile to `dist/` (ESM + CJS + type declarations) |
+| `npm run lint` | Run ESLint |
 | `npm test` | Run the full test suite |
 | `npm run coverage` | Run tests with coverage report |
 | `npm run typecheck` | Type-check without emitting output |

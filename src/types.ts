@@ -5,24 +5,68 @@ export interface WidgetPadding {
   right?: number;
 }
 
+export type TwilioEventName =
+  | 'start'
+  | 'page-change'
+  | 'document-upload'
+  | 'one-time-link-sent'
+  | 'one-time-link-start'
+  | 'one-time-link-exit';
+
 export interface TwilioEvent {
-  name: string;
+  name: TwilioEventName;
   data?: Record<string, unknown>;
 }
+
+export type SupportedLanguage =
+  | 'ar-EG'
+  | 'az'
+  | 'bg'
+  | 'bn'
+  | 'cs'
+  | 'cy'
+  | 'da'
+  | 'de'
+  | 'el-GR'
+  | 'en-US'
+  | 'es-MX'
+  | 'fi'
+  | 'fr'
+  | 'he'
+  | 'hi'
+  | 'hr'
+  | 'hu'
+  | 'hy'
+  | 'id-ID'
+  | 'it'
+  | 'ja'
+  | 'ko-KR'
+  | 'lt'
+  | 'ms'
+  | 'nl-NL'
+  | 'no'
+  | 'pl'
+  | 'pt-BR'
+  | 'ro'
+  | 'ru'
+  | 'sk'
+  | 'sr'
+  | 'sv'
+  | 'ta'
+  | 'th'
+  | 'tl'
+  | 'tr-TR'
+  | 'uk-UA'
+  | 'ur'
+  | 'vi'
+  | 'zh-CN'
+  | 'zh-TW';
+
 
 export interface TwilioError {
   code: number;
   message: string;
   sessionId?: string;
-}
-
-export interface TwilioCompleteResult {
-  inquiryId: string;
-  status: string;
-}
-
-export interface TwilioCancelResult {
-  sessionToken?: string;
 }
 
 export const TWILIO_ERROR_CODES = {
@@ -36,14 +80,14 @@ export const TWILIO_ERROR_CODES = {
 export interface TwilioComplianceEmbedProps {
   sessionId: string;
   sessionToken: string;
-  language?: string;
-  frameHeight?: string;
-  frameWidth?: string;
+  language?: SupportedLanguage;
+  frameHeight?: string | number;
+  frameWidth?: string | number;
   iframeTitle?: string;
   widgetPadding?: WidgetPadding;
   onReady?: () => void;
-  onComplete?: (result: TwilioCompleteResult) => void;
-  onCancel?: (result: TwilioCancelResult) => void;
+  onComplete?: () => void;
+  onCancel?: () => void;
   onError?: (error: TwilioError) => void;
   onEvent?: (event: TwilioEvent) => void;
 }

@@ -47,24 +47,38 @@ describe('TwilioComplianceEmbed', () => {
     ]);
   });
 
-  it('passes optional layout props when provided', () => {
+  it('passes optional layout props when provided as strings', () => {
     render(
       <TwilioComplianceEmbed
         sessionId="inq_123"
         sessionToken="tok_abc"
         language="de"
-        frameHeight="500px"
-        frameWidth="100%"
+        frameHeight="100%"
+        frameWidth="50%"
         iframeTitle="Verify"
         widgetPadding={{ top: 10 }}
       />,
     );
     const props = getInquiryProps();
     expect(props.language).toBe('de');
-    expect(props.frameHeight).toBe('500px');
-    expect(props.frameWidth).toBe('100%');
+    expect(props.frameHeight).toBe('100%');
+    expect(props.frameWidth).toBe('50%');
     expect(props.iframeTitle).toBe('Verify');
     expect(props.widgetPadding).toEqual({ top: 10 });
+  });
+
+  it('coerces numeric frameHeight/frameWidth to pixel strings', () => {
+    render(
+      <TwilioComplianceEmbed
+        sessionId="inq_123"
+        sessionToken="tok_abc"
+        frameHeight={650}
+        frameWidth={400}
+      />,
+    );
+    const props = getInquiryProps();
+    expect(props.frameHeight).toBe('650px');
+    expect(props.frameWidth).toBe('400px');
   });
 
   it('does not pass undefined optional props', () => {
@@ -89,36 +103,24 @@ describe('TwilioComplianceEmbed', () => {
     expect(onReady).toHaveBeenCalledWith();
   });
 
-  it('fires onComplete with inquiryId and status', () => {
+  it('fires onComplete without vendor args', () => {
     const onComplete = vi.fn();
     render(
       <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onComplete={onComplete} />,
     );
     const props = getInquiryProps();
-    (props.onComplete as (data: Record<string, unknown>) => void)({
-      inquiryId: 'inq_123',
-      status: 'approved',
-      fields: { name: 'John' },
-    });
-    expect(onComplete).toHaveBeenCalledWith({
-      inquiryId: 'inq_123',
-      status: 'approved',
-    });
+    (props.onComplete as () => void)();
+    expect(onComplete).toHaveBeenCalledWith();
   });
 
-  it('fires onCancel with sessionToken for resumption', () => {
+  it('fires onCancel without vendor args', () => {
     const onCancel = vi.fn();
     render(
       <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onCancel={onCancel} />,
     );
     const props = getInquiryProps();
-    (props.onCancel as (data: Record<string, unknown>) => void)({
-      inquiryId: 'inq_456',
-      sessionToken: 'resume_tok_xyz',
-    });
-    expect(onCancel).toHaveBeenCalledWith({
-      sessionToken: 'resume_tok_xyz',
-    });
+    (props.onCancel as () => void)();
+    expect(onCancel).toHaveBeenCalledWith();
   });
 
   it('maps onError through errorMapper', () => {

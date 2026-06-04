@@ -13,7 +13,7 @@ npm install @twilio/twilio-compliance-embed-react
 This package requires React 19+ and `persona-react`:
 
 ```bash
-npm install react persona-react
+npm install react react-dom persona-react
 ```
 
 ## Usage
@@ -28,22 +28,15 @@ function VerificationPage() {
       sessionToken="your-session-token"
 
       // Layout / localisation (all optional)
-      language="en"
-      frameHeight="650px"
-      frameWidth="400px"
+      language="en-US"
+      frameHeight={650}
+      frameWidth={400}
       iframeTitle="Identity Verification"
       widgetPadding={{ top: 0, bottom: 0, left: 0, right: 0 }}
 
       onReady={() => console.log('verification UI ready')}
-      onComplete={(result) => {
-        // result.inquiryId - ID of the completed inquiry
-        // result.status    - e.g. 'approved', 'needs_review'
-        console.log('verification completed', result.status);
-      }}
-      onCancel={(result) => {
-        // result.sessionToken - token to resume the inquiry later (may be undefined)
-        console.log('cancelled', result.sessionToken);
-      }}
+      onComplete={() => console.log('verification completed')}
+      onCancel={() => console.log('cancelled')}
       onError={(error) => {
         // error.code    - Twilio error code (e.g. 21706)
         // error.message - Human-readable description
@@ -97,14 +90,14 @@ function App() {
 |------|------|----------|-------------|
 | `sessionId` | `string` | Yes | Pre-created verification session ID |
 | `sessionToken` | `string` | Yes | Authentication token for the session |
-| `language` | `string` | No | Locale code for the verification UI (e.g. `'en'`, `'es'`) |
-| `frameHeight` | `string` | No | CSS height of the verification iframe (e.g. `'650px'`, `'100%'`) |
-| `frameWidth` | `string` | No | CSS width of the verification iframe (max `'768px'`) |
+| `language` | `SupportedLanguage` | No | BCP 47 locale code (e.g. `'en-US'`, `'es-MX'`). See [supported languages](#supported-languages) below |
+| `frameHeight` | `string \| number` | No | CSS height of the verification iframe (e.g. `650`, `'100%'`) |
+| `frameWidth` | `string \| number` | No | CSS width of the verification iframe (e.g. `400`, `'100%'`, max `768`) |
 | `iframeTitle` | `string` | No | Accessible title for the iframe element |
 | `widgetPadding` | `WidgetPadding` | No | Padding around the widget (`{ top?, bottom?, left?, right? }` in px) |
 | `onReady` | `() => void` | No | Fires when the verification UI is loaded and ready |
-| `onComplete` | `(result: TwilioCompleteResult) => void` | No | Fires on verification completion — includes inquiry status |
-| `onCancel` | `(result: TwilioCancelResult) => void` | No | Fires when the user exits — includes session token for resumption |
+| `onComplete` | `() => void` | No | Fires on successful verification |
+| `onCancel` | `() => void` | No | Fires when the user exits without completing |
 | `onError` | `(error: TwilioError) => void` | No | Fires on SDK-level failure — see error codes below |
 | `onEvent` | `(event: TwilioEvent) => void` | No | Fires on notable verification flow events |
 
@@ -114,27 +107,11 @@ The `onEvent` callback receives an object with the following fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `string` | Event name (see allowed values below) |
+| `name` | `TwilioEventName` | Event name (see allowed values below) |
 | `data` | `Record<string, unknown> \| undefined` | Optional event metadata |
 
 Allowed event names: `start`, `page-change`, `document-upload`, `one-time-link-sent`, `one-time-link-start`, `one-time-link-exit`.
 
-### `TwilioCompleteResult`
-
-The `onComplete` callback receives an object with the following fields:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `inquiryId` | `string` | ID of the completed inquiry |
-| `status` | `string` | Verification outcome (e.g. `'approved'`, `'needs_review'`, `'declined'`) |
-
-### `TwilioCancelResult`
-
-The `onCancel` callback receives an object with the following fields:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `sessionToken` | `string \| undefined` | Token to resume the inquiry later. Pass this as the `sessionToken` prop to continue where the user left off. |
 
 ### `TwilioError`
 
@@ -146,15 +123,76 @@ The `onError` callback receives an object with the following fields:
 | `message` | `string` | Human-readable description |
 | `sessionId` | `string \| undefined` | Present for runtime errors; absent for configuration errors |
 
-### Error codes
+### `TWILIO_ERROR_CODES`
 
-| Code | Meaning |
-|------|---------|
-| `21706` | Session token expired — fetch a new session token and reinitialise |
-| `21710` | Internal provider error |
-| `21711` | Invalid SDK initialization — check `sessionId` and `sessionToken` |
-| `21712` | Template misconfiguration — contact Twilio support |
-| `21719` | Unexpected error |
+A named constant object exported for comparing error codes without hardcoding numbers:
+
+```tsx
+import { TWILIO_ERROR_CODES } from '@twilio/twilio-compliance-embed-react';
+
+onError={(error) => {
+  if (error.code === TWILIO_ERROR_CODES.UNAUTHENTICATED) {
+    // refresh the session token
+  }
+}}
+```
+
+| Constant | Code | Meaning |
+|----------|------|---------|
+| `UNAUTHENTICATED` | `21706` | Session token expired — fetch a new session token and reinitialise |
+| `INTERNAL_PERSONA_ERROR` | `21710` | Internal provider error |
+| `INVALID_CONFIG` | `21711` | Invalid SDK initialization — check `sessionId` and `sessionToken` |
+| `INACTIVE_TEMPLATE` | `21712` | Template misconfiguration — contact Twilio support |
+| `UNKNOWN` | `21719` | Unexpected error |
+
+## Supported languages
+
+The `language` prop accepts the following BCP 47 locale codes:
+
+| Code | Language |
+|------|----------|
+| `ar-EG` | Arabic (Egypt) |
+| `az` | Azerbaijani |
+| `bg` | Bulgarian |
+| `bn` | Bengali |
+| `cs` | Czech |
+| `cy` | Welsh |
+| `da` | Danish |
+| `de` | German |
+| `el-GR` | Greek (Greece) |
+| `en-US` | English (US) |
+| `es-MX` | Spanish (Mexico) |
+| `fi` | Finnish |
+| `fr` | French |
+| `he` | Hebrew |
+| `hi` | Hindi |
+| `hr` | Croatian |
+| `hu` | Hungarian |
+| `hy` | Armenian |
+| `id-ID` | Indonesian |
+| `it` | Italian |
+| `ja` | Japanese |
+| `ko-KR` | Korean |
+| `lt` | Lithuanian |
+| `ms` | Malay |
+| `nl-NL` | Dutch (Netherlands) |
+| `no` | Norwegian |
+| `pl` | Polish |
+| `pt-BR` | Portuguese (Brazil) |
+| `ro` | Romanian |
+| `ru` | Russian |
+| `sk` | Slovak |
+| `sr` | Serbian |
+| `sv` | Swedish |
+| `ta` | Tamil |
+| `th` | Thai |
+| `tl` | Filipino (Tagalog) |
+| `tr-TR` | Turkish |
+| `uk-UA` | Ukrainian |
+| `ur` | Urdu |
+| `vi` | Vietnamese |
+| `zh-CN` | Chinese (Simplified) |
+| `zh-TW` | Chinese (Traditional) |
 
 ## Styling
 
@@ -170,4 +208,6 @@ We recommend using a minimum height of 650px and a minimum width of 400px to ens
 
 ## SSR
 
-The component is safe to import in server-side environments. When `sessionId` or `sessionToken` is missing, the component renders nothing and fires `onError` with code `21711` after mounting in the browser. Callbacks are never invoked during server-side rendering.
+The underlying `persona-react` package references browser globals (`self`) at the module level. This component works in frameworks that polyfill these globals (e.g., Next.js), but importing it in bare Node.js without a polyfill will throw a `ReferenceError`. Use dynamic imports or conditional rendering to avoid loading the module on the server.
+
+When `sessionId` or `sessionToken` is missing, the component renders nothing and fires `onError` with code `21711` after mounting in the browser. Callbacks are never invoked during server-side rendering.
