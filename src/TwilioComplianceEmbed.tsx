@@ -40,13 +40,18 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
   onEventRef.current = onEvent;
 
   const invalid = !sessionId || !sessionToken;
+  const hasReportedInvalidRef = useRef(false);
 
   useEffect(() => {
-    if (invalid) {
+    if (invalid && !hasReportedInvalidRef.current) {
+      hasReportedInvalidRef.current = true;
       onErrorRef.current?.({
         code: TWILIO_ERROR_CODES.INVALID_CONFIG,
         message: 'sessionId and sessionToken are required',
       });
+    }
+    if (!invalid) {
+      hasReportedInvalidRef.current = false;
     }
   }, [invalid]);
 
@@ -63,8 +68,12 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
       {...(iframeTitle !== undefined && { iframeTitle })}
       {...(widgetPadding !== undefined && { widgetPadding })}
       onReady={() => { onReadyRef.current?.(); }}
-      onComplete={() => { onCompleteRef.current?.(); }}
-      onCancel={() => { onCancelRef.current?.(); }}
+      onComplete={({ inquiryId, status }: { inquiryId: string; status: string; fields: Record<string, unknown> }) => {
+        onCompleteRef.current?.({ inquiryId, status });
+      }}
+      onCancel={({ sessionToken: cancelToken }: { inquiryId?: string; sessionToken?: string }) => {
+        onCancelRef.current?.({ sessionToken: cancelToken });
+      }}
       onError={({ code }: { status?: number; code: string }) => {
         const mapped = mapError(code);
         onErrorRef.current?.({ code: mapped.code, message: mapped.message, sessionId: sessionIdRef.current });

@@ -16,6 +16,15 @@ export interface TwilioError {
   sessionId?: string;
 }
 
+export interface TwilioCompleteResult {
+  inquiryId: string;
+  status: string;
+}
+
+export interface TwilioCancelResult {
+  sessionToken?: string;
+}
+
 export const TWILIO_ERROR_CODES = {
   INTERNAL_PERSONA_ERROR: 21710,
   INVALID_CONFIG: 21711,
@@ -33,8 +42,8 @@ export interface TwilioComplianceEmbedProps {
   iframeTitle?: string;
   widgetPadding?: WidgetPadding;
   onReady?: () => void;
-  onComplete?: () => void;
-  onCancel?: () => void;
+  onComplete?: (result: TwilioCompleteResult) => void;
+  onCancel?: (result: TwilioCancelResult) => void;
   onError?: (error: TwilioError) => void;
   onEvent?: (event: TwilioEvent) => void;
 }

@@ -10,7 +10,7 @@ npm install @twilio/twilio-compliance-embed-react
 
 ### Peer dependencies
 
-This package requires the following peer dependencies:
+This package requires React 19+ and `persona-react`:
 
 ```bash
 npm install react persona-react
@@ -29,14 +29,21 @@ function VerificationPage() {
 
       // Layout / localisation (all optional)
       language="en"
-      frameHeight={650}
-      frameWidth={400}
+      frameHeight="650px"
+      frameWidth="400px"
       iframeTitle="Identity Verification"
       widgetPadding={{ top: 0, bottom: 0, left: 0, right: 0 }}
 
       onReady={() => console.log('verification UI ready')}
-      onComplete={() => console.log('verification completed')}
-      onCancel={() => console.log('cancelled')}
+      onComplete={(result) => {
+        // result.inquiryId - ID of the completed inquiry
+        // result.status    - e.g. 'approved', 'needs_review'
+        console.log('verification completed', result.status);
+      }}
+      onCancel={(result) => {
+        // result.sessionToken - token to resume the inquiry later (may be undefined)
+        console.log('cancelled', result.sessionToken);
+      }}
       onError={(error) => {
         // error.code    - Twilio error code (e.g. 21706)
         // error.message - Human-readable description
@@ -91,13 +98,13 @@ function App() {
 | `sessionId` | `string` | Yes | Pre-created verification session ID |
 | `sessionToken` | `string` | Yes | Authentication token for the session |
 | `language` | `string` | No | Locale code for the verification UI (e.g. `'en'`, `'es'`) |
-| `frameHeight` | `number \| string` | No | Height of the verification iframe |
-| `frameWidth` | `number \| string` | No | Width of the verification iframe (max 768px) |
+| `frameHeight` | `string` | No | CSS height of the verification iframe (e.g. `'650px'`, `'100%'`) |
+| `frameWidth` | `string` | No | CSS width of the verification iframe (max `'768px'`) |
 | `iframeTitle` | `string` | No | Accessible title for the iframe element |
 | `widgetPadding` | `WidgetPadding` | No | Padding around the widget (`{ top?, bottom?, left?, right? }` in px) |
 | `onReady` | `() => void` | No | Fires when the verification UI is loaded and ready |
-| `onComplete` | `() => void` | No | Fires on successful verification |
-| `onCancel` | `() => void` | No | Fires when the user exits without completing |
+| `onComplete` | `(result: TwilioCompleteResult) => void` | No | Fires on verification completion — includes inquiry status |
+| `onCancel` | `(result: TwilioCancelResult) => void` | No | Fires when the user exits — includes session token for resumption |
 | `onError` | `(error: TwilioError) => void` | No | Fires on SDK-level failure — see error codes below |
 | `onEvent` | `(event: TwilioEvent) => void` | No | Fires on notable verification flow events |
 
@@ -111,6 +118,23 @@ The `onEvent` callback receives an object with the following fields:
 | `data` | `Record<string, unknown> \| undefined` | Optional event metadata |
 
 Allowed event names: `start`, `page-change`, `document-upload`, `one-time-link-sent`, `one-time-link-start`, `one-time-link-exit`.
+
+### `TwilioCompleteResult`
+
+The `onComplete` callback receives an object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `inquiryId` | `string` | ID of the completed inquiry |
+| `status` | `string` | Verification outcome (e.g. `'approved'`, `'needs_review'`, `'declined'`) |
+
+### `TwilioCancelResult`
+
+The `onCancel` callback receives an object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessionToken` | `string \| undefined` | Token to resume the inquiry later. Pass this as the `sessionToken` prop to continue where the user left off. |
 
 ### `TwilioError`
 

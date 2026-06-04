@@ -28,7 +28,10 @@
     }
   },
   "files": [
-    "dist/index.*"
+    "dist/index.mjs",
+    "dist/index.cjs",
+    "dist/index.d.ts",
+    "dist/index.d.cts"
   ],
   "sideEffects": false,
   "engines": {
@@ -43,7 +46,7 @@
     "coverage": "vitest run --coverage"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
+    "react": "^19.0.1",
     "persona-react": "^6.7.0"
   },
   "devDependencies": {

@@ -89,24 +89,36 @@ describe('TwilioComplianceEmbed', () => {
     expect(onReady).toHaveBeenCalledWith();
   });
 
-  it('fires onComplete without vendor args', () => {
+  it('fires onComplete with inquiryId and status', () => {
     const onComplete = vi.fn();
     render(
       <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onComplete={onComplete} />,
     );
     const props = getInquiryProps();
-    (props.onComplete as () => void)();
-    expect(onComplete).toHaveBeenCalledWith();
+    (props.onComplete as (data: Record<string, unknown>) => void)({
+      inquiryId: 'inq_123',
+      status: 'approved',
+      fields: { name: 'John' },
+    });
+    expect(onComplete).toHaveBeenCalledWith({
+      inquiryId: 'inq_123',
+      status: 'approved',
+    });
   });
 
-  it('fires onCancel without vendor args', () => {
+  it('fires onCancel with sessionToken for resumption', () => {
     const onCancel = vi.fn();
     render(
       <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onCancel={onCancel} />,
     );
     const props = getInquiryProps();
-    (props.onCancel as () => void)();
-    expect(onCancel).toHaveBeenCalledWith();
+    (props.onCancel as (data: Record<string, unknown>) => void)({
+      inquiryId: 'inq_456',
+      sessionToken: 'resume_tok_xyz',
+    });
+    expect(onCancel).toHaveBeenCalledWith({
+      sessionToken: 'resume_tok_xyz',
+    });
   });
 
   it('maps onError through errorMapper', () => {
@@ -171,6 +183,20 @@ describe('TwilioComplianceEmbed', () => {
     );
     expect(container.innerHTML).toBe('');
     expect(getInquiryProps()).toBeUndefined();
+  });
+
+  it('does not re-fire INVALID_CONFIG on rerender while still invalid', async () => {
+    const onError = vi.fn();
+    const { rerender } = render(
+      <TwilioComplianceEmbed sessionId="" sessionToken="tok_abc" onError={onError} />,
+    );
+    await vi.waitFor(() => {
+      expect(onError).toHaveBeenCalledTimes(1);
+    });
+    rerender(
+      <TwilioComplianceEmbed sessionId="" sessionToken="tok_abc" onError={onError} />,
+    );
+    expect(onError).toHaveBeenCalledTimes(1);
   });
 
   it('uses latest callback after prop update (stale closure protection)', () => {
