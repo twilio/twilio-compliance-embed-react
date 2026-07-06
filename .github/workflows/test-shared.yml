@@ -1,0 +1,14 @@
+name: test-shared (verification)
+
+# Throwaway: verifies this PUBLIC repo can resolve a reusable workflow hosted in
+# the internal twilio/sdk-actions repo. Delete after the verdict.
+on:
+  push:
+    branches: [test-shared]
+  pull_request:
+    branches: [test-shared]
+  workflow_dispatch:
+
+jobs:
+  test-shared:
+    uses: twilio/sdk-actions/.github/workflows/ping.yml@main
