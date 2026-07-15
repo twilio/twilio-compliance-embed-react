@@ -1,6 +1,6 @@
 {
   "name": "@twilio/twilio-compliance-embed-react",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "The official React SDK for Twilio Compliance Embed",
   "license": "MIT",
   "repository": {

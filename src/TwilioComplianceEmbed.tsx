@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Inquiry } from 'persona-react';
-import { EVENTS_ALLOWLIST } from './constants';
+import Inquiry from 'persona-react';
+import { EVENTS_ALLOWLIST, TERMINAL_SCREEN_PREFIX } from './constants';
 import { mapError } from './utils/errorMapper';
 import { TWILIO_ERROR_CODES } from './types';
 import type { TwilioComplianceEmbedProps, TwilioEventName } from './types';
@@ -16,6 +16,7 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
     widgetPadding,
     onReady,
     onComplete,
+    onSubmit,
     onCancel,
     onError,
     onEvent,
@@ -29,6 +30,9 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
 
   const onCancelRef = useRef(onCancel);
   onCancelRef.current = onCancel;
@@ -75,6 +79,15 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
         onErrorRef.current?.({ code: mapped.code, message: mapped.message, sessionId: sessionIdRef.current });
       }}
       onEvent={(name: string, metadata?: Record<string, unknown>) => {
+        if (name === 'page-change' && metadata) {
+          const screenName = metadata.name as string | undefined;
+          if (screenName && screenName.startsWith(TERMINAL_SCREEN_PREFIX)) {
+            const outcome = screenName.slice(TERMINAL_SCREEN_PREFIX.length);
+            if (outcome) {
+              onSubmitRef.current?.({ outcome });
+            }
+          }
+        }
         onEventRef.current?.({ name: name as TwilioEventName, data: metadata });
       }}
     />

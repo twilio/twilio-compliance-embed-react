@@ -10,3 +10,5 @@ export const EVENTS_ALLOWLIST = [
   'one-time-link-start' as PersonaEvent,
   'one-time-link-exit' as PersonaEvent,
 ];
+
+export const TERMINAL_SCREEN_PREFIX = 'twilio:compliance:terminal:';

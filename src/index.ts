@@ -4,6 +4,7 @@ export type {
   TwilioError,
   TwilioEvent,
   TwilioEventName,
+  TwilioSubmitEvent,
   SupportedLanguage,
   WidgetPadding,
 } from './types';
