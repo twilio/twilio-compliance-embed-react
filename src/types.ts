@@ -77,6 +77,10 @@ export const TWILIO_ERROR_CODES = {
   UNKNOWN: 21719,
 } as const;
 
+export interface TwilioSubmitEvent {
+  outcome: string;
+}
+
 export interface TwilioComplianceEmbedProps {
   sessionId: string;
   sessionToken: string;
@@ -87,6 +91,7 @@ export interface TwilioComplianceEmbedProps {
   widgetPadding?: WidgetPadding;
   onReady?: () => void;
   onComplete?: () => void;
+  onSubmit?: (event: TwilioSubmitEvent) => void;
   onCancel?: () => void;
   onError?: (error: TwilioError) => void;
   onEvent?: (event: TwilioEvent) => void;

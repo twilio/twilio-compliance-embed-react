@@ -4,7 +4,7 @@ import { TwilioComplianceEmbed } from '../../src/TwilioComplianceEmbed';
 import { TWILIO_ERROR_CODES } from '../../src/types';
 
 vi.mock('persona-react', () => ({
-  Inquiry: (props: Record<string, unknown>) => {
+  default: (props: Record<string, unknown>) => {
     (globalThis as Record<string, unknown>).__inquiryProps = props;
     return null;
   },
@@ -261,6 +261,132 @@ describe('TwilioComplianceEmbed', () => {
       undefined,
     );
     expect(onEvent).toHaveBeenCalledWith({ name: 'start', data: undefined });
+  });
+
+  describe('onSubmit', () => {
+    it('fires onSubmit with outcome "success" on terminal screen', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:success' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+    });
+
+    it('fires onSubmit with outcome "failed" on terminal screen', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:failed' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'failed' });
+    });
+
+    it('fires onSubmit with arbitrary outcome suffix', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:review-pending' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'review-pending' });
+    });
+
+    it('does not fire onSubmit for non-terminal page-change events', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'screen_abc123' },
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit for empty outcome suffix', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:' },
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit for non-page-change events', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'start',
+        { name: 'twilio:compliance:terminal:success' },
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('does not fire onSubmit when metadata is undefined', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        undefined,
+      );
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('still fires onEvent when onSubmit fires', () => {
+      const onSubmit = vi.fn();
+      const onEvent = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} onEvent={onEvent} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:success' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'success' });
+      expect(onEvent).toHaveBeenCalledWith({ name: 'page-change', data: { name: 'twilio:compliance:terminal:success' } });
+    });
+
+    it('uses latest onSubmit after prop update (stale closure protection)', () => {
+      const onSubmitV1 = vi.fn();
+      const onSubmitV2 = vi.fn();
+      const { rerender } = render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmitV1} />,
+      );
+      rerender(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmitV2} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio:compliance:terminal:success' },
+      );
+      expect(onSubmitV1).not.toHaveBeenCalled();
+      expect(onSubmitV2).toHaveBeenCalledWith({ outcome: 'success' });
+    });
   });
 
   it('includes sessionId in Persona-originated onError', () => {
