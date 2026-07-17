@@ -37,7 +37,7 @@ function VerificationPage() {
       onReady={() => console.log('verification UI ready')}
       onComplete={() => console.log('verification completed')}
       onSubmit={(event) => {
-        // event.outcome - terminal screen outcome (e.g. 'approved', 'declined')
+        // event.outcome - e.g. 'success', 'failed', 'review-pending'
         console.log('submitted with outcome:', event.outcome);
       }}
       onCancel={() => console.log('cancelled')}
@@ -123,7 +123,7 @@ The `onSubmit` callback receives an object with the following fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `outcome` | `string` | The terminal screen outcome (e.g. `'approved'`, `'declined'`) |
+| `outcome` | `string` | The terminal screen outcome (e.g. `'success'`, `'failed'`, `'review-pending'`) |
 
 `onSubmit` fires when the verification flow reaches a terminal screen, indicating the user has completed their submission. Use this to detect the final outcome before `onComplete` fires.
 
