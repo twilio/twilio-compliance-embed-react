@@ -36,6 +36,10 @@ function VerificationPage() {
 
       onReady={() => console.log('verification UI ready')}
       onComplete={() => console.log('verification completed')}
+      onSubmit={(event) => {
+        // event.outcome - e.g. 'success', 'failed', 'review-pending'
+        console.log('submitted with outcome:', event.outcome);
+      }}
       onCancel={() => console.log('cancelled')}
       onError={(error) => {
         // error.code    - Twilio error code (e.g. 21706)
@@ -97,6 +101,7 @@ function App() {
 | `widgetPadding` | `WidgetPadding` | No | Padding around the widget (`{ top?, bottom?, left?, right? }` in px) |
 | `onReady` | `() => void` | No | Fires when the verification UI is loaded and ready |
 | `onComplete` | `() => void` | No | Fires on successful verification |
+| `onSubmit` | `(event: TwilioSubmitEvent) => void` | No | Fires when the user reaches a terminal screen — see [`TwilioSubmitEvent`](#twiliosubmitevent) below |
 | `onCancel` | `() => void` | No | Fires when the user exits without completing |
 | `onError` | `(error: TwilioError) => void` | No | Fires on SDK-level failure — see error codes below |
 | `onEvent` | `(event: TwilioEvent) => void` | No | Fires on notable verification flow events |
@@ -112,6 +117,15 @@ The `onEvent` callback receives an object with the following fields:
 
 Allowed event names: `start`, `page-change`, `document-upload`, `one-time-link-sent`, `one-time-link-start`, `one-time-link-exit`.
 
+### `TwilioSubmitEvent`
+
+The `onSubmit` callback receives an object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `outcome` | `string` | The terminal screen outcome (e.g. `'success'`, `'failed'`, `'review-pending'`) |
+
+`onSubmit` fires when the verification flow reaches a terminal screen, indicating the user has completed their submission. Use this to detect the final outcome before `onComplete` fires.
 
 ### `TwilioError`
 
