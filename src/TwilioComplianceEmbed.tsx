@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Inquiry from 'persona-react';
-import { EVENTS_ALLOWLIST, TERMINAL_SCREEN_PREFIX } from './constants';
+import { EVENTS_ALLOWLIST, TERMINAL_SCREEN_PREFIX, INQUIRY_SUBMITTED_PREFIX } from './constants';
 import { mapError } from './utils/errorMapper';
 import { TWILIO_ERROR_CODES } from './types';
 import type { TwilioComplianceEmbedProps, TwilioEventName } from './types';
@@ -86,6 +86,8 @@ export function TwilioComplianceEmbed(props: TwilioComplianceEmbedProps) {
             if (outcome) {
               onSubmitRef.current?.({ outcome });
             }
+          } else if (screenName && screenName.startsWith(INQUIRY_SUBMITTED_PREFIX)) {
+            onSubmitRef.current?.({ outcome: 'submitted' });
           }
         }
         onEventRef.current?.({ name: name as TwilioEventName, data: metadata });
