@@ -12,3 +12,5 @@ export const EVENTS_ALLOWLIST = [
 ];
 
 export const TERMINAL_SCREEN_PREFIX = 'twilio:compliance:terminal:';
+
+export const INQUIRY_SUBMITTED_PREFIX = 'twilio_inquiry_completed';

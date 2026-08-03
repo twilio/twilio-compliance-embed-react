@@ -370,6 +370,47 @@ describe('TwilioComplianceEmbed', () => {
       expect(onEvent).toHaveBeenCalledWith({ name: 'page-change', data: { name: 'twilio:compliance:terminal:success' } });
     });
 
+    it('fires onSubmit with outcome "submitted" for legacy twilio_inquiry_completed page name', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio_inquiry_completed' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
+    });
+
+    it('fires onSubmit with outcome "submitted" when legacy page name has an extra suffix', () => {
+      const onSubmit = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio_inquiry_completed_extra' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
+    });
+
+    it('still fires onEvent when onSubmit fires for the legacy twilio_inquiry_completed page name', () => {
+      const onSubmit = vi.fn();
+      const onEvent = vi.fn();
+      render(
+        <TwilioComplianceEmbed sessionId="inq_123" sessionToken="tok_abc" onSubmit={onSubmit} onEvent={onEvent} />,
+      );
+      const props = getInquiryProps();
+      (props.onEvent as (name: string, meta?: Record<string, unknown>) => void)(
+        'page-change',
+        { name: 'twilio_inquiry_completed' },
+      );
+      expect(onSubmit).toHaveBeenCalledWith({ outcome: 'submitted' });
+      expect(onEvent).toHaveBeenCalledWith({ name: 'page-change', data: { name: 'twilio_inquiry_completed' } });
+    });
+
     it('uses latest onSubmit after prop update (stale closure protection)', () => {
       const onSubmitV1 = vi.fn();
       const onSubmitV2 = vi.fn();

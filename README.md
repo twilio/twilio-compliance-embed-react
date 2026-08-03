@@ -127,6 +127,8 @@ The `onSubmit` callback receives an object with the following fields:
 
 `onSubmit` fires when the verification flow reaches a terminal screen, indicating the user has completed their submission. Use this to detect the final outcome before `onComplete` fires.
 
+For legacy Persona templates using the older `twilio_inquiry_completed` page-name convention (no outcome encoded), `onSubmit` fires with `outcome: 'submitted'`.
+
 ### `TwilioError`
 
 The `onError` callback receives an object with the following fields:
